@@ -1,0 +1,62 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "header.html" %}
+
+
+  <!-- GOOGLE PLUS SIGN IN-->
+  <div id="signInButton">
+      <span class="g-signin"
+            data-scope="openid email"
+            data-clientid="255502800037-kg2aokmi6dudta8rodq91ari17r82llk.apps.googleusercontent.com"
+            data-redirecturi="postmessage"
+            data-accesstype="offline"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-approvalprompt="force">
+      </span>
+  </div>
+
+  <div id="result"></div>
+
+  <div id="getHandleForm" style="display:none"> 
+    <h1> Welcome to Stock Market Savant!</h1>
+    <h3> We have detected you are new around these parts.  Stock Market Savant is a game of fantasy stock portfolios</h3>
+    <h3> You will have the oppurtunity to create your own portfolio and put your portfolio building skills to the test!</h3>
+    <h3> Please enter the name you will be known on this website  </h3>
+    <form action="/setup_account?state={{STATE}}" method="post">
+       Stock Market Savant Handle name: <input type="text" name="handle_name" id="handleFormNameField"><br>
+      <input type="submit" value="Submit">
+    </form>
+
+  </div>
+
+  <script>
+    function signInCallback(authResult) {
+    if (authResult['code']) {
+     
+      // Hide the sign-in button now that the user is authorized
+      $('#signInButton').attr('style', 'display: none');
+
+      $.ajax({
+        type: 'POST',
+        url: '/gconnect?state={{STATE}}',
+        processData: false,
+        data: authResult['code'],
+        contentType: 'application/octet-stream; charset=utf-8',
+        dataType: 'json',
+        success: function(result) { 
+          if (result['handle'] == 'None' ) {
+             $('#getHandleForm').attr('style', 'display:visible'); 
+             $('#handleFormNameField').attr( 'value', result['handle'] );
+          } 
+          else {  window.location.href = "/"; }
+
+          }//if (result).. else
+      }); //Ajax
+    }  //if authResult
+    } //function
+  </script>
+
+{% endblock %}
+

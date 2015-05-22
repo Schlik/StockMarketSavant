@@ -1,0 +1,5 @@
+#!/bin/bash
+
+/home/schlik/webapps/stockmarketsavant/apache2/bin/stop
+sleep 5
+/home/schlik/webapps/stockmarketsavant/apache2/bin/start

@@ -1,0 +1,20 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "header.html" %}
+
+<h1>Sectors of the S&P 500</h1>
+
+{% for i in industries  %}
+
+<div>
+<p>
+<a href=http://{{website}}/sector/{{i.sector_name.replace(' ','_')}}/>{{i.sector_name}}</a>
+</p>
+</div>
+
+
+{% endfor %}
+
+{% endblock %}
+
