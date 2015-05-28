@@ -22,25 +22,41 @@ h3 {
 	color: #4A4A4A;
 	line-height: 23px;
 }
- p {
+
+p {
  	font-family: "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
  	font-size: 16px;
  	color: #7B7573;
  	line-height: 24px;
  	font-weight: 400;
- }
+}
 
- strong {
+strong {
  	font-size: 16px;
  	color: #7B7573;
  	line-height: 24px;
- }
+}
 
- a {
+a {
  	font-size: 14px;
  	color: #0093B9;
  	line-height: 17px;
- }
+}
+
+.object_ok
+{
+border: 1px solid green;
+color: #333333;
+}
+ 
+.object_error
+{
+border: 1px solid #AC3962;
+color: #333333;
+}
+
+
+
 .padding-top {
 	padding-top: 30px;
 }

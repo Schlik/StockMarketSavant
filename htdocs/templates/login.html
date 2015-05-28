@@ -7,13 +7,12 @@
   <!-- GOOGLE PLUS SIGN IN-->
   <div id="signInButton">
       <span class="g-signin"
-            data-scope="openid email"
+            data-scope="email"
             data-clientid="255502800037-kg2aokmi6dudta8rodq91ari17r82llk.apps.googleusercontent.com"
             data-redirecturi="postmessage"
             data-accesstype="offline"
             data-cookiepolicy="single_host_origin"
-            data-callback="signInCallback"
-            data-approvalprompt="force">
+            data-callback="signInCallback">
       </span>
   </div>
 
@@ -25,8 +24,13 @@
     <h3> You will have the oppurtunity to create your own portfolio and put your portfolio building skills to the test!</h3>
     <h3> Please enter the name you will be known on this website  </h3>
     <form action="/setup_account?state={{STATE}}" method="post">
-       Stock Market Savant Handle name: <input type="text" name="handle_name" id="handleFormNameField"><br>
-      <input type="submit" value="Submit">
+      <div class="col-md-6">
+         Stock Market Savant Handle name: <input type="text" name="handle_name" id="handleFormNameField">
+      </div>
+      <div class="col-md-6">
+       <div id="handleStatus"> </div><br>
+      </div>
+      <input disabled type="submit" value="Submit" id="submitButton" >
     </form>
 
   </div>
@@ -36,7 +40,7 @@
     if (authResult['code']) {
      
       // Hide the sign-in button now that the user is authorized
-      $('#signInButton').attr('style', 'display: none');
+      $('#signInButton').attr('style', 'display:none');
 
       $.ajax({
         type: 'POST',
@@ -57,6 +61,53 @@
     }  //if authResult
     } //function
   </script>
+
+
+
+  <script>
+  $(document).ready(function(){
+    $("#handleFormNameField").on('change keyup paste',function() {
+        var name = $("#handleFormNameField").val();
+        if(name.length < 4) 
+        {
+          $("#handleStatus").html('<font color="red">' + 
+                            'The handle should have at least <strong>4</strong> characters.</font>');
+          $("#handleFormNameField").removeClass('object_ok');
+          $("#handleFormNameField").addClass('object_error');
+          $("#submitButton").attr( 'disabled', 'disabled' );
+        }
+        else
+        {
+           $("#handleStatus").html('');
+           $.ajax({ 
+             type: "POST", 
+             url: "verifyHandleUniqueness?handle=" + name,    
+             contentType: "json",
+             dataType: "json",
+             success: function(result){ 
+               if( result['return_value']  == 'unique' )
+               {
+                 $("#handleStatus").attr('style', 'display:none');
+                 $("#handleFormNameField").removeClass('object_error');
+                 $("#handleFormNameField").addClass('object_ok');
+                 $("#submitButton").removeAttr( 'disabled' );
+               }
+               else
+               {
+                 $("#handleStatus").attr('style', 'display:visible');
+                 $("#handleStatus").html('<font color="red"> Username is in use');
+                 $("#handleFormNameField").removeClass('object_ok');
+                 $("#handleFormNameField").addClass('object_error');
+                 $("#submitButton").attr( 'disabled', 'disabled' );
+               }
+             }//end function
+           });//end ajax
+        }
+       
+    });//formNameField change()
+  });//document.ready
+  </script>
+
 
 {% endblock %}
 

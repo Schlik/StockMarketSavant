@@ -38,13 +38,20 @@ session = DBSession()
 
 host = "stockmarketsavant.com"
 
+@app.route('/')
+def showSectors():
+    if 'handle' not in login_session:
+       return redirect( '/login' )
+    inds =  session.query(IndustryList).all() 
+    return render_template( 'sector_info.html', industries = inds, website = host )
+
 @app.route('/login')
 def showLogin():
     # Create a state token to prevent forgery
     # Store it in the session for later validation.
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
-    app.logger.info('login_session[state] is %s' % login_session['state'] )
+    app.logger.info('login_session[state] is %s', login_session['state'] )
     return render_template('login.html', STATE=state )
 
 @app.route('/createUser')
@@ -62,12 +69,17 @@ def printSector(sector_name):
     print sector_name.replace('_',' ' )
     return render_template( 'stock_info.html', stocks = stock_list, sector_name=sector_name.replace('_',' ' ) )
 
-@app.route('/')
-def showSectors():
-    if 'handle' not in login_session:
-       return redirect( '/login' )
-    inds =  session.query(IndustryList).all() 
-    return render_template( 'sector_info.html', industries = inds, website = host )
+@app.route('/verifyHandleUniqueness', methods=['POST'])
+def verifyHandleUniqueness():
+
+    if session.query(User).filter_by( site_handle = request.args.get('handle')).count() == 0 :
+      return_val = 'unique'
+    else:
+      app.logger.info('verifyHandleUniqueness() : name %s is NOT unique ',  request.args.get('handle')  )
+      return_val = 'not_unique'
+
+    return json.dumps({'return_value': return_val})
+   
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -122,8 +134,6 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
     data = answer.json()
 
-    login_session['username'] = data['name']
-    login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
     user_id = getUserID(login_session['email'])
@@ -154,11 +164,12 @@ def gdisconnect():
 
 
     if result['status'] == '200':
-        del login_session['access_token']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['picture']
-        del login_session['handle']
+        if login_session.has_key('access_token') :
+            del login_session['access_token']
+        if login_session.has_key('handle'):
+            del login_session['handle']
+        if login_session.has_key('email'):
+            del login_session['email']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -171,7 +182,7 @@ def gdisconnect():
 def setupAccount():
   
     print request.form['handle_name']
-    app.logger.info('setupAccount() : name is %s' %  request.form['handle_name'] )
+    app.logger.info('setupAccount() : name is %s', request.form['handle_name'] )
 
     if request.args.get('state') != login_session['state']:
         return render_template('poo.html')
@@ -187,7 +198,8 @@ def setupAccount():
 #########################
 # User id centric methods
 def createUser(login_session):
-    newUser = User( site_handle = login_session['handle'], name = login_session['username'], email = login_session['email'], picture = login_session['picture'])
+
+    newUser = User( site_handle = login_session['handle'], email = login_session['email'] )
     session.add( newUser )
     session.commit()
     user = session.query(User).filter_by( email = login_session['email']).one()
