@@ -1,0 +1,33 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "header.html" %}
+
+<h1> Current Entries </h1>
+<br>
+<table class="table table-bordered">
+   <thead>
+     <tr>
+      <th>User</th>
+      <th>Round 1A Winner </th>
+      <th>Round 1B Winner </th>
+      <th>Tournament Winner </th>
+     </tr>
+   </thead>
+   <tbody>
+   {% for i in bracket_list %}
+      <tr>
+        <td>{{i.site_handle}}</td>
+        <td align="center"><img class=bracket_img src="{{symbol_image[i.bracket_1A_winner-1]}}"></td>
+        <td align="center"><img class=bracket_img src="{{symbol_image[i.bracket_1B_winner-1]}}"></td>
+        <td align="center"><img class=bracket_img src="{{symbol_image[i.bracket_2_winner-1]}}"></td>
+      </tr>
+   {% endfor %}
+
+
+   </tbody>
+</table>
+{% endblock %}
+
+
+

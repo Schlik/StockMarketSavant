@@ -3,6 +3,27 @@
 {% block content %}
 {% include "header.html" %}
 
+  <h2> Welcome to Stock Market Savant </h2>
+
+  <h4> 
+  This website is currently in development.  
+  <br><br>
+  Please login with either your google+ or facebook account.
+  This is necesary to retrieve your email.  Once you have authenticated with these services you will
+  be asked for a login name that this site will use to track your picks and your points.
+
+  <br><br>
+
+  Stock market savant is a weekly fantasy stock market bracket game. Sorta like the NCAA tournament - 
+  but for stocks.  Each week a new bracket will be posted and you will be asked to submit which 
+  stock you think will post a better return for the week.
+
+  <br><br>
+
+  Are you a true savant?  Sign up, compete and find out!
+  </h4>
+
+  <br>
 
   <!-- GOOGLE PLUS SIGN IN-->
   <div id="signInButton">
@@ -14,25 +35,6 @@
             data-cookiepolicy="single_host_origin"
             data-callback="signInCallback">
       </span>
-  </div>
-
-  <div id="result"></div>
-
-  <div id="getHandleForm" style="display:none"> 
-    <h1> Welcome to Stock Market Savant!</h1>
-    <h3> We have detected you are new around these parts.  Stock Market Savant is a game of fantasy stock portfolios</h3>
-    <h3> You will have the oppurtunity to create your own portfolio and put your portfolio building skills to the test!</h3>
-    <h3> Please enter the name you will be known on this website  </h3>
-    <form action="/setup_account?state={{STATE}}" method="post">
-      <div class="col-md-6">
-         Stock Market Savant Handle name: <input type="text" name="handle_name" id="handleFormNameField">
-      </div>
-      <div class="col-md-6">
-       <div id="handleStatus"> </div><br>
-      </div>
-      <input disabled type="submit" value="Submit" id="submitButton" >
-    </form>
-
   </div>
 
   <script>
@@ -52,15 +54,93 @@
         success: function(result) { 
           if (result['handle'] == 'None' ) {
              $('#getHandleForm').attr('style', 'display:visible'); 
-             $('#handleFormNameField').attr( 'value', result['handle'] );
           } 
-          else {  window.location.href = "/"; }
-
+          else {  
+             window.location.href = "/"; }
           }//if (result).. else
       }); //Ajax
     }  //if authResult
     } //function
   </script>
+  <!-- END END END GOOGLE PLUS SIGN IN-->
+
+
+  <!-- FACEBOOK PLUS SIGN IN-->
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '482504498571101',
+        cookie     : true,  // enable cookies to allow the server to access the session
+        xfbml      : true,  // parse social plugins on this page
+        version    : 'v2.2' // use version 2.2
+      });
+    };
+    
+      // Load the SDK asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+
+    // Here we run a very simple test of the Graph API after login is
+    // successful.  See statusChangeCallback() for when this call is made.
+    function sendTokenToServer() {
+      var access_token = FB.getAuthResponse()['accessToken'];
+      console.log(access_token)
+      console.log('Welcome!  Fetching your information.... ');
+
+      FB.api('/me', function(response) {
+        console.log('Successful login for: ' + response.name);
+       $.ajax({
+        type: 'POST',
+        url: '/fbconnect?state={{STATE}}',
+        processData: false,
+        data: access_token,
+        contentType: 'application/octet-stream; charset=utf-8',
+        dataType: 'json',
+        success: function(result) { 
+          if (result['handle'] == 'None' ) {
+             $('#getHandleForm').attr('style', 'display:visible'); 
+          } 
+          else {  
+             window.location.href = "/"; }
+          }//if (result).. else
+       }); //.ajax
+      });
+    }
+  </script>
+
+  <button>
+    <fb:login-button scope="email" onlogin="sendTokenToServer();">
+    <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
+    </fb:login-button>
+  </button>
+
+
+  <!-- END END END FACEBOOK PLUS SIGN IN-->
+
+  <div id="result"></div>
+
+  <div id="getHandleForm" style="display:none"> 
+    <h1> Welcome to Stock Market Savant!</h1>
+    <h3> We have detected you are new around these parts.  Stock Market Savant is a game of fantasy stock portfolios</h3>
+    <h3> You will have the oppurtunity to create your own portfolio and put your portfolio building skills to the test!</h3>
+    <h3> Please enter the name you will be known on this website  </h3>
+    <form action="/setup_account?state={{STATE}}" method="post">
+      <div class="col-md-6">
+         Stock Market Savant Handle name: <input type="text" name="handle_name" id="handleFormNameField">
+      </div>
+      <div class="col-md-6">
+       <div id="handleStatus"> </div><br>
+      </div>
+      <input disabled type="submit" value="Submit" id="submitButton" >
+    </form>
+
+  </div>
 
 
 

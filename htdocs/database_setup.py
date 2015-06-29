@@ -17,6 +17,7 @@ Base = declarative_base()
 #####   CLASSES    #########
 ############################
 
+
 class IndustryList(Base):
     __tablename__ = 'industry_list'
     sector_name = Column( String(50), nullable = False, primary_key = True)
@@ -64,6 +65,14 @@ class User(Base):
     #        'fb_id'       : self.fb_id,
     #        'twitter_id'  : self.twitter_id
 #        }
+
+class Bracket(Base):
+    __tablename__     = 'weekly_bracket' 
+    bracket_1A_winner = Column( Integer, nullable = False )
+    bracket_1B_winner = Column( Integer, nullable = False )
+    bracket_2_winner  = Column( Integer, nullable = False )
+    user_id           = Column( Integer, ForeignKey('user.id'), primary_key = True )
+    user              = relationship( User, foreign_keys=[user_id] ) 
 
 class Portfolio(Base):
     __tablename__ = 'portfolio'

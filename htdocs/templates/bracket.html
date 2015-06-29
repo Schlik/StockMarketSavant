@@ -1,0 +1,61 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "header.html" %}
+
+
+<script src="static/js/bracket.js"></script>
+
+<div class="col-md-12 col-md-offset-4"><h1> This Week's Bracket </h1></div>
+
+
+<div class="row">
+  <div class="col-md-4   bracket_box" id="bracket-round1-1" group="1A">
+  <img id="bracket-1A-1-img" alt="1" src="static/images/mcd.png" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4" id="bracket-round1A-text" ><h3>Tuesday June 23, 2015</h3> </div>
+  <div class="col-md-4  text-right bracket_box" id="bracket-round1A-winner" valid_drop_group="1A" group="2A"  ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-2A-1-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div>
+
+<div class="row">
+  <div class="col-md-4  bracket_box" id="bracket-round1-2" group="1A">
+  <img id="bracket-1A-2-img" alt="2" src="static/images/sonc.jpg" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-4" id="bracket-round2-text" ><h3>Thursday June 25, 2015</h3> </div>
+  <div class="col-md-4 bracket_box" id="bracket-round2-winner" valid_drop_group="2A" ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-3A-1-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div> 
+
+
+<div class="row">
+  <div class="col-md-4   bracket_box" id="bracket-round1-3" group="1B" >
+  <img id="bracket-round1-3-img" alt="3" src="static/images/bbry.jpg" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4" id="bracket-round1A-text" ><h3>Wednesday June 24, 2015</h3> </div>
+  <div class="col-md-4  bracket_box" id="bracket-round1B-winner" group="2A" valid_drop_group="1B" ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-2A-2-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div> 
+
+<div class="row">
+  <div class="col-md-4   bracket_box" id="bracket-round1-4" group="1B" >
+  <img id="bracket-round1B-team2-1-img" alt="4" src="static/images/nok.jpg" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<!-- submit button -->
+<form action="/set_bracket?state={{STATE}}" method="post">
+   <input type="hidden" id="bracket-round1B" name="bracket-round1B" value="">
+   <input type="hidden" id="bracket-round2"  name="bracket-round2"  value="">
+   <input type="hidden" id="bracket-round1A" name="bracket-round1A" value="">
+   <input type="submit" value="Submit" id="bracketSubmitButton" >
+</form> 
+
+
+{% endblock %}
+

@@ -1,0 +1,154 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% include "header.html" %}
+
+
+<body onLoad="init()">
+
+<script src="static/js/bracket.js"></script>
+
+<div class="col-md-12 col-md-offset-4"><h1> Iteration 4 </h1></div>
+
+
+
+<div class="row">
+  <div class="col-md-4  bracket_box" id="bracket-round1A-1" group="1A">
+  <img id="bracket-1A-1-img" src="static/images/goog.png" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-3 bracket_box" id="bracket-round1a-winner" valid_drop_group="1A" group="2A"  ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-2A-1-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div>
+
+<div class="row">
+  <div class="col-md-4 bracket_box" id="bracket-round1A-2" group="1A">
+  <img id="bracket-1A-2-img" src="static/images/appl.png" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-6 bracket_box" id="bracket-round2-winner" valid_drop_group="2A" ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-3A-1-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div> 
+
+
+<div class="row">
+  <div class="col-md-4  bracket_box" id="bracket-round1-3" group="1B" >
+  <img id="bracket-round1-3-img" src="static/images/amzn.jpg" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+<div class="row">
+  <div class="col-md-4 col-md-offset-3 bracket_box" id="bracket-round1b-winner" group="2A" valid_drop_group="1B" ondrop="drop(event)" ondragover="allowDrop(event)" >
+  <img id="bracket-2A-2-img" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div></div> 
+
+<div class="row">
+  <div class="col-md-4  bracket_box" id="bracket-round1-4" group="1B" >
+  <img id="bracket-round1B-team2-1-img" src="static/images/ge.jpg" class=bracket_img draggable="true" ondragstart="drag(event)">
+</div> </div>
+
+
+
+<br><br>
+
+<div class="col-md-12"><h1> Iteration 3 </h1></div>
+
+<div id="iter3">
+   <div id="catList" class="col-md-3"></div>
+   <div id="catContent" class="col-md-9">
+        <div class="col-md-9" id="listCatName"></div>
+        <div class="col-md-9" id="listCatPic"></div>
+        <div class="col-md-9" id="listCatCount"></div>
+   </div>
+</div>
+
+
+<br>
+
+  <div class="col-md-12"><h1> Iteration 2 </h1></div>
+
+  <div class="row">
+  <div class="col-md-6" id="catNameLeft"><h2>Put</h2></div>
+  <div class="col-md-6 text-right" id="catNameRight"><h2>Daisy</h2></div>
+  </div>
+
+  <div class="row">
+  <div class="col-md-6" id="catPicLeft"> 
+    <img class="img-rounded" src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRyym8wQIm1l8XPe-6Wh29rKOH3hzFkzTyjmKV7G5-Och2H5KRF" >
+  </div>
+
+  <div class="col-md-6 text-right" id="catPicRight"> 
+    <img class="img-rounded" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTM4mdchZRSr3UmISa886P__z5aOwoIsf8MYKKWnCbFl9u7Stbz">
+  </div> 
+  </div>
+
+  <div class="row">
+  <div class="col-md-6" id="clickCountLeft"><h3> 0  </h3> </div>
+  <div class="col-md-6 text-right" id="clickCountRight"><h3>   0</h3> </div>
+  </div>
+
+
+  <div class="col-md-12"><h1> Iteration 1 </h1></div>
+  <div class="col-md-12 cat_pic" id="catPic">  <div class="cat_pic">
+    <img class="img-rounded" src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRyym8wQIm1l8XPe-6Wh29rKOH3hzFkzTyjmKV7G5-Och2H5KRF">
+  </div> </div>
+  <div class="col-md-12" id="clickCount"> 0 </div>
+
+<script>
+   $('#catPic').click( function(catCount) {
+      arguments.callee.click_count = arguments.callee.click_count || 0;
+      arguments.callee.click_count++;
+      $('#clickCount').html( arguments.callee.click_count );
+   });
+   $('#catPicLeft').click( function(catCount) {
+      arguments.callee.click_count = arguments.callee.click_count || 0;
+      arguments.callee.click_count++;
+      $('#clickCountLeft').html( "<h3>" +   arguments.callee.click_count + "<h3>" );
+   });
+
+   $('#catPicRight').click( function(catCount) {
+      arguments.callee.click_count = arguments.callee.click_count || 0;
+      arguments.callee.click_count++;
+      $('#clickCountRight').html( "<h3>" +  arguments.callee.click_count + "</h3>" );
+   });
+</script>
+
+<script>
+function init(){
+
+  var names = ["Brandi", "Put", "Daisy", "Buttons", "Oscar"];
+  var pics =  ["http://desktopbackgrounds4u.com/wp-content/gallery/famous-cat-pictures/cat.jpg",
+               "http://cdn.abclocal.go.com/content/creativecontent/images/cms/422180_1280x720.jpg",
+               "https://www.petfinder.com/wp-content/uploads/2012/11/99059361-choose-cat-litter-632x475.jpg",
+               "http://conservationcubclub.com/wp-content/uploads/2012/01/Pink-Nose-and-Toes.jpg",
+               "http://www.hdwallpaperspulse.com/wp-content/uploads/2012/10/1216697205Lyd0u5.jpg" ];
+    
+  var elem = document.createElement("SELECT");
+  elem.setAttribute("id", "catListMenu");
+
+  for (var i = 0; i < names.length; i++) 
+  {
+     var option_elem = document.createElement("OPTION");
+     var name = names[i];
+     var pic = pics[i];
+     option_elem.text = name;
+     option_elem.index = i;
+     elem.appendChild( option_elem );
+  }
+
+  elem.addEventListener('change', function() {
+     var index = document.getElementById('catListMenu').selectedIndex; 
+
+     alert( name[i] );
+     $('#listCatName').html( "<h3>" + name[i] + "</h3>" );
+     $('#listCatPic').html( "<h3>" + name[i] + "</h3>"  );
+  });
+
+  $('#catList').html(elem);
+
+}
+</script>
+
+{% endblock %}
+

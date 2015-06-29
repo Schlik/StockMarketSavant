@@ -1,8 +1,19 @@
-<div class="row top-menu">
-   <div class="col-md-6">
-      <p>Some Link Will go Here</p>
+<div class="main-banner"></div>
+
+<div class="top-menu">
+ <div class="row">
+   {%if 'handle' in session %}
+   <div class="col-xs-4 col-sm-4 col-md-4">
+          <p>Welcome, {{session['handle']}}</p>
    </div>
-   <div class="col-md-6 text-right">
-      <a href='/gdisconnect'>Logout </a>
+
+   <div class="col-xs-4 col-sm-4 col-md-4 text-center">
+          <a href='/bracket'>Enter Your Bracket</a>
    </div>
+
+   <div class="col-xs-4 col-sm-4 col-md-4 text-right">
+          <a href='/disconnect'>Logout </a>
+   </div>
+   {% endif %}
+ </div>
 </div>

@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, StockList, IndustryList, User, Portfolio
+from database_setup import Base, StockList, IndustryList, User, Portfolio, Bracket
 
 import random, string
 import httplib2, json, requests
@@ -38,6 +38,7 @@ session = DBSession()
 
 host = "stockmarketsavant.com"
 
+# Default location - currently lists industries
 @app.route('/')
 def showSectors():
     if 'handle' not in login_session:
@@ -45,6 +46,7 @@ def showSectors():
     inds =  session.query(IndustryList).all() 
     return render_template( 'sector_info.html', industries = inds, website = host )
 
+# Called to get a suer to login in
 @app.route('/login')
 def showLogin():
     # Create a state token to prevent forgery
@@ -54,12 +56,7 @@ def showLogin():
     app.logger.info('login_session[state] is %s', login_session['state'] )
     return render_template('login.html', STATE=state )
 
-@app.route('/createUser')
-def createUser():
-    if 'handle' not in login_session:
-       return redirect( '/login' )
-    
-    
+# Called when sector is clicked - temporary 
 @app.route('/sector/<string:sector_name>/')
 def printSector(sector_name): 
     if 'handle' not in login_session:
@@ -69,20 +66,175 @@ def printSector(sector_name):
     print sector_name.replace('_',' ' )
     return render_template( 'stock_info.html', stocks = stock_list, sector_name=sector_name.replace('_',' ' ) )
 
+# Method called to set a user's bracket entry
+@app.route('/set_bracket', methods=['POST'])
+def setBracket():
+    winner_1a = request.form.get('bracket-round1A')
+    winner_1b = request.form.get('bracket-round1B')
+    winner_2 = request.form.get('bracket-round2')
+
+    images = ( 'static/images/mcd.png', 'static/images/sonc.jpg', 'static/images/bbry.jpg', 'static/images/nok.jpg' );
+
+    updateBracket(login_session, (winner_1a, winner_1b, winner_2))
+    
+    brackets = getBrackets(); 
+    return render_template( 'show_brackets.html', bracket_list = brackets, symbol_image=images ) 
+   
+    
+
+# Method called from the client AJAX to determine if handle is unique
 @app.route('/verifyHandleUniqueness', methods=['POST'])
 def verifyHandleUniqueness():
 
     if session.query(User).filter_by( site_handle = request.args.get('handle')).count() == 0 :
       return_val = 'unique'
     else:
-      app.logger.info('verifyHandleUniqueness() : name %s is NOT unique ',  request.args.get('handle')  )
+      app.logger.info('verifyHandleUniqueness() : name %s is NOT unique  '%  request.args.get('handle')  )
       return_val = 'not_unique'
 
     return json.dumps({'return_value': return_val})
+
+# Called from submit to create account after unique handle is entered
+@app.route('/setup_account', methods=['POST'])
+def setupAccount():
+  
+    app.logger.info('setupAccount() : name is %s' % request.form['handle_name'] )
+
+    if request.args.get('state') != login_session['state']:
+        return render_template('poo.html')
+
+    login_session['handle'] =  request.form['handle_name']
+    createUser(login_session);
+    return redirect( '/' )
+
+@app.route('/bracket')
+def showBracket():
+   return render_template( 'bracket.html' )
+    
+@app.route('/catClicker')
+def catClicker():
+   return render_template( 'cat_clicker.html' )
+    
+
+#########################
+# User id centric methods
+#########################
+def updateBracket(login_session, picks):
+
+    current_user_id = getUserID( login_session['email'] )
+
+    if session.query(Bracket).filter(Bracket.user_id == current_user_id ).count() == 0:
+        bracket = Bracket( user_id = current_user_id,   \
+                           bracket_1A_winner = picks[0],\
+                           bracket_1B_winner = picks[1],\
+                           bracket_2_winner = picks[2] )
+    else:
+         bracket = session.query(Bracket).filter(Bracket.user_id==current_user_id).one()
+         bracket.bracket_1A_winner = picks[0]
+         bracket.bracket_1B_winner = picks[1]
+         bracket.bracket_2_winner = picks[2] 
+
+    session.add( bracket )
+    session.commit()
+
+def getBrackets():
+    brackets = session.query(Bracket).join(User).all()
+    return brackets
+
+
+def createUser(login_session):
+
+    newUser = User( site_handle = login_session['handle'],  \
+                    email = login_session['email'] )
+                    #provider = login_session['provider'] )
+
+    session.add( newUser )
+    session.commit()
+    user = session.query(User).filter_by( email = login_session['email']).one()
+    return user.email
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return user
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
+#########################
+# END User id centric methods
+#########################
    
+
+#######################################
+#  BEGIN CONNECT/LOGIN
+#######################################
+@app.route('/fbconnect', methods=['POST'])
+def fbconnect():
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = request.data
+
+    #app_secret = json.loads( open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+    #app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
+
+    app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
+    app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % ( app_id, app_secret, access_token) 
+    print url
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+
+
+    # Use token to get user info from API
+    userinfo_url = "https://graph.facebook.com/v2.2/me"
+    # strip expire tag from access token
+    token = result.split("&")[0]
+
+
+    url = 'https://graph.facebook.com/v2.2/me?%s' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+    login_session['email'] = data['email']
+    login_session['facebook_id'] = data['id']
+    login_session['username'] = data['name']
+    login_session['provider'] = 'facebook' 
+
+    # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
+    stored_token = token.split("=")[1]
+    login_session['access_token'] = stored_token
+
+    
+    # Get user picture
+    url = 'https://graph.facebook.com/v2.2/me/picture?%s&redirect=0&height=200&width=200' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+
+    login_session['picture'] = data["data"]["url"]
+
+    # see if user exists
+    user_id = getUserID(login_session['email'])
+    if user_id is None :
+       response = make_response(json.dumps({'status':'OK','handle':'None'}), 200 )
+    else:
+       user = getUserInfo(user_id)
+       login_session['handle'] =  user.site_handle
+       response = make_response(json.dumps({'status':'OK','handle':user.site_handle}), 200 )
+    return response
+### END fbconnect
+
+
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    app.logger.info("gconnect")
      #1 - make sure the 'state' matches
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameters'), 401 )
@@ -134,9 +286,18 @@ def gconnect():
     answer = requests.get(userinfo_url, params=params)
     data = answer.json()
 
+    login_session['username'] = data['name']
+    login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+    login_session['provider'] = 'google'
+
+    #app.logger.info("user :  %s, pic : %s, email : %s, provider : %s" % (data['name'], data['picture'],  data['email'],  login_session['provider']) )
+    app.logger.info("user :  %s," % data['name'] );
 
     user_id = getUserID(login_session['email'])
+
+    app.logger.info("user_id  :  %s ", user_id );
+
     if user_id is None :
        response = make_response(json.dumps({'status':'OK','handle':'None'}), 200 )
     else:
@@ -144,10 +305,21 @@ def gconnect():
        login_session['handle'] =  user.site_handle
        response = make_response(json.dumps({'status':'OK','handle':user.site_handle}), 200 )
     return response
+#######################################
+#  END CONNECT/LOGIN
+#######################################
 
 
 
-@app.route('/gdisconnect')
+#######################################
+#  BEGIN DISCONNECT  
+#######################################
+def fbdisconnect():
+    facebook_id = login_session['facebook_id']
+    url = 'https://graph.facebook.com/%s/permissions' % facebook_id
+    h = httplib2.Http()
+    result = h.request(url, 'DELETE')[1]
+
 def gdisconnect():
     stored_access_token = login_session.get('access_token')
     stored_credentials = AccessTokenCredentials(stored_access_token, 'user-agent-value')
@@ -162,61 +334,22 @@ def gdisconnect():
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
 
+@app.route('/disconnect')
+def disconnect( ):
+    if login_session['provider'] == 'google':
+       gdisconnect()
+    if login_session['provider'] == 'facebook':
+       fbdisconnect()
 
-    if result['status'] == '200':
-        if login_session.has_key('access_token') :
-            del login_session['access_token']
-        if login_session.has_key('handle'):
-            del login_session['handle']
-        if login_session.has_key('email'):
-            del login_session['email']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    else:
-        response = make_response( json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-        return response
+    login_session.clear()
 
-@app.route('/setup_account', methods=['POST'])
-def setupAccount():
-  
-    print request.form['handle_name']
-    app.logger.info('setupAccount() : name is %s', request.form['handle_name'] )
+    response = make_response(json.dumps('Successfully disconnected.'), 200)
+    response.headers['Content-Type'] = 'application/json'
+    return response
+#######################################
+#  END DISCONNECT  
+#######################################
 
-    if request.args.get('state') != login_session['state']:
-        return render_template('poo.html')
-
-    login_session['handle'] =  request.form['handle_name']
-    createUser(login_session);
-    return redirect( '/' )
-    
-    
-
-
-
-#########################
-# User id centric methods
-def createUser(login_session):
-
-    newUser = User( site_handle = login_session['handle'], email = login_session['email'] )
-    session.add( newUser )
-    session.commit()
-    user = session.query(User).filter_by( email = login_session['email']).one()
-    return user.email
-
-def getUserInfo(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
-    return user
-
-def getUserID(email):
-    try:
-        user = session.query(User).filter_by(email=email).one()
-        return user.id
-    except:
-        return None
-# END User id centric methods
-#########################
 
 
 
